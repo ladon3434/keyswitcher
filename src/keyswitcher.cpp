@@ -20,8 +20,12 @@ constexpr UINT WM_SWITCH = WM_APP + 2;
 constexpr UINT ID_MODE_CYCLE = 1;
 constexpr UINT ID_MODE_FIXED = 2;
 constexpr UINT ID_EXIT = 3;
+constexpr UINT ID_AUTOSTART = 4;
 constexpr DWORD TAP_MAX_MS = 500;
 constexpr wchar_t REG_KEY[] = L"Software\\KeySwitcher";
+constexpr wchar_t RUN_KEY[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+constexpr wchar_t APPROVED_KEY[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
+constexpr wchar_t APP_NAME[] = L"KeySwitcher";
 
 HWND g_wnd;
 HICON g_icon;
@@ -36,25 +40,26 @@ struct Strings {
     const wchar_t* cycle;
     const wchar_t* fixed;
     const wchar_t* exit;
+    const wchar_t* autostart;
 };
 
 const Strings STRINGS[] = {
-    {LANG_ENGLISH, L"Left Ctrl — next language", L"Left Ctrl — primary language, Right Ctrl — secondary", L"Exit"},
-    {LANG_RUSSIAN, L"Левый Ctrl — следующий язык", L"Левый Ctrl — основной язык, правый Ctrl — дополнительный", L"Выход"},
-    {LANG_UKRAINIAN, L"Лівий Ctrl — наступна мова", L"Лівий Ctrl — основна мова, правий Ctrl — додаткова", L"Вихід"},
-    {LANG_GERMAN, L"Linke Strg-Taste — nächste Sprache", L"Linke Strg-Taste — Hauptsprache, rechte Strg-Taste — Zweitsprache", L"Beenden"},
-    {LANG_FRENCH, L"Ctrl gauche — langue suivante", L"Ctrl gauche — langue principale, Ctrl droit — langue secondaire", L"Quitter"},
-    {LANG_SPANISH, L"Ctrl izquierdo — siguiente idioma", L"Ctrl izquierdo — idioma principal, Ctrl derecho — idioma secundario", L"Salir"},
-    {LANG_ITALIAN, L"Ctrl sinistro — lingua successiva", L"Ctrl sinistro — lingua principale, Ctrl destro — lingua secondaria", L"Esci"},
-    {LANG_PORTUGUESE, L"Ctrl esquerdo — próximo idioma", L"Ctrl esquerdo — idioma principal, Ctrl direito — idioma secundário", L"Sair"},
-    {LANG_POLISH, L"Lewy Ctrl — następny język", L"Lewy Ctrl — język główny, prawy Ctrl — język dodatkowy", L"Zakończ"},
-    {LANG_TURKISH, L"Sol Ctrl — sonraki dil", L"Sol Ctrl — ana dil, sağ Ctrl — ikinci dil", L"Çıkış"},
-    {LANG_JAPANESE, L"左 Ctrl — 次の言語", L"左 Ctrl — メイン言語、右 Ctrl — サブ言語", L"終了"},
-    {LANG_KOREAN, L"왼쪽 Ctrl — 다음 언어", L"왼쪽 Ctrl — 기본 언어, 오른쪽 Ctrl — 보조 언어", L"종료"},
-    {LANG_CHINESE_SIMPLIFIED, L"左 Ctrl — 下一种语言", L"左 Ctrl — 主要语言，右 Ctrl — 次要语言", L"退出"},
+    {LANG_ENGLISH, L"Left Ctrl — next language", L"Left Ctrl — primary language, Right Ctrl — secondary", L"Exit", L"Start with Windows"},
+    {LANG_RUSSIAN, L"Левый Ctrl — следующий язык", L"Левый Ctrl — основной язык, правый Ctrl — дополнительный", L"Выход", L"Запускать вместе с Windows"},
+    {LANG_UKRAINIAN, L"Лівий Ctrl — наступна мова", L"Лівий Ctrl — основна мова, правий Ctrl — додаткова", L"Вихід", L"Запускати разом із Windows"},
+    {LANG_GERMAN, L"Linke Strg-Taste — nächste Sprache", L"Linke Strg-Taste — Hauptsprache, rechte Strg-Taste — Zweitsprache", L"Beenden", L"Mit Windows starten"},
+    {LANG_FRENCH, L"Ctrl gauche — langue suivante", L"Ctrl gauche — langue principale, Ctrl droit — langue secondaire", L"Quitter", L"Lancer au démarrage de Windows"},
+    {LANG_SPANISH, L"Ctrl izquierdo — siguiente idioma", L"Ctrl izquierdo — idioma principal, Ctrl derecho — idioma secundario", L"Salir", L"Iniciar con Windows"},
+    {LANG_ITALIAN, L"Ctrl sinistro — lingua successiva", L"Ctrl sinistro — lingua principale, Ctrl destro — lingua secondaria", L"Esci", L"Avvia con Windows"},
+    {LANG_PORTUGUESE, L"Ctrl esquerdo — próximo idioma", L"Ctrl esquerdo — idioma principal, Ctrl direito — idioma secundário", L"Sair", L"Iniciar com o Windows"},
+    {LANG_POLISH, L"Lewy Ctrl — następny język", L"Lewy Ctrl — język główny, prawy Ctrl — język dodatkowy", L"Zakończ", L"Uruchamiaj z systemem Windows"},
+    {LANG_TURKISH, L"Sol Ctrl — sonraki dil", L"Sol Ctrl — ana dil, sağ Ctrl — ikinci dil", L"Çıkış", L"Windows ile başlat"},
+    {LANG_JAPANESE, L"左 Ctrl — 次の言語", L"左 Ctrl — メイン言語、右 Ctrl — サブ言語", L"終了", L"Windows の起動時に実行"},
+    {LANG_KOREAN, L"왼쪽 Ctrl — 다음 언어", L"왼쪽 Ctrl — 기본 언어, 오른쪽 Ctrl — 보조 언어", L"종료", L"Windows 시작 시 실행"},
+    {LANG_CHINESE_SIMPLIFIED, L"左 Ctrl — 下一种语言", L"左 Ctrl — 主要语言，右 Ctrl — 次要语言", L"退出", L"随 Windows 启动"},
 };
 
-const Strings TRADITIONAL_CHINESE = {LANG_CHINESE_TRADITIONAL, L"左 Ctrl — 下一種語言", L"左 Ctrl — 主要語言，右 Ctrl — 次要語言", L"結束"};
+const Strings TRADITIONAL_CHINESE = {LANG_CHINESE_TRADITIONAL, L"左 Ctrl — 下一種語言", L"左 Ctrl — 主要語言，右 Ctrl — 次要語言", L"結束", L"隨 Windows 啟動"};
 
 const Strings& UiStrings()
 {
@@ -70,6 +75,39 @@ const Strings& UiStrings()
         if (s.lang == primary)
             return s;
     return STRINGS[0];
+}
+
+bool AutostartRegistered()
+{
+    return RegGetValueW(HKEY_CURRENT_USER, RUN_KEY, APP_NAME, RRF_RT_REG_SZ, nullptr, nullptr, nullptr) == ERROR_SUCCESS;
+}
+
+bool AutostartEnabled()
+{
+    if (!AutostartRegistered())
+        return false;
+    BYTE state[12];
+    DWORD size = sizeof(state);
+    if (RegGetValueW(HKEY_CURRENT_USER, APPROVED_KEY, APP_NAME, RRF_RT_REG_BINARY, nullptr, state, &size) == ERROR_SUCCESS)
+        return !(state[0] & 1);
+    return true;
+}
+
+void SetAutostart(bool enable)
+{
+    RegDeleteKeyValueW(HKEY_CURRENT_USER, APPROVED_KEY, APP_NAME);
+    if (!enable) {
+        RegDeleteKeyValueW(HKEY_CURRENT_USER, RUN_KEY, APP_NAME);
+        return;
+    }
+    wchar_t cmd[MAX_PATH + 2];
+    cmd[0] = L'"';
+    const DWORD len = GetModuleFileNameW(nullptr, cmd + 1, MAX_PATH);
+    if (len == 0 || len >= MAX_PATH)
+        return;
+    cmd[len + 1] = L'"';
+    cmd[len + 2] = 0;
+    RegSetKeyValueW(HKEY_CURRENT_USER, RUN_KEY, APP_NAME, REG_SZ, cmd, (len + 3) * sizeof(wchar_t));
 }
 
 void LoadMode()
@@ -275,6 +313,8 @@ void ShowMenu()
     AppendMenuW(menu, MF_STRING, ID_MODE_FIXED, text.fixed);
     CheckMenuRadioItem(menu, ID_MODE_CYCLE, ID_MODE_FIXED, g_mode == 0 ? ID_MODE_CYCLE : ID_MODE_FIXED, MF_BYCOMMAND);
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
+    AppendMenuW(menu, MF_STRING | (AutostartEnabled() ? MF_CHECKED : MF_UNCHECKED), ID_AUTOSTART, text.autostart);
+    AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     AppendMenuW(menu, MF_STRING, ID_EXIT, text.exit);
 
     POINT pt;
@@ -287,6 +327,8 @@ void ShowMenu()
     if (cmd == ID_MODE_CYCLE || cmd == ID_MODE_FIXED) {
         g_mode = cmd == ID_MODE_FIXED ? 1 : 0;
         SaveMode();
+    } else if (cmd == ID_AUTOSTART) {
+        SetAutostart(!AutostartEnabled());
     } else if (cmd == ID_EXIT) {
         DestroyWindow(g_wnd);
     }
@@ -325,6 +367,8 @@ int Run()
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     LoadMode();
+    if (AutostartEnabled())
+        SetAutostart(true);
 
     HINSTANCE inst = GetModuleHandleW(nullptr);
     WNDCLASSW wc{};

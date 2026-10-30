@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-30
+
+### Added
+
+- «Start with Windows» checkbox in the tray menu, translated into all supported languages. The startup entry follows the executable if it is moved.
+
 ## [1.0.0] - 2026-10-30
 
 ### Added
@@ -13,4 +19,5 @@ All notable changes to this project are documented here. The format follows [Kee
 - Lone-tap detection that leaves Ctrl shortcuts, Ctrl+mouse and AltGr intact.
 - Single instance; the tray icon comes back after Explorer restarts.
 
+[1.1.0]: https://github.com/ladon3434/keyswitcher/releases/tag/v1.1.0
 [1.0.0]: https://github.com/ladon3434/keyswitcher/releases/tag/v1.0.0

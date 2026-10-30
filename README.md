@@ -16,6 +16,8 @@ Click the tray icon (the Armenian letter Ա) to choose a mode:
 - **Left Ctrl — next language**: Left Ctrl cycles through the installed input languages.
 - **Left Ctrl — primary language, Right Ctrl — secondary**: Left Ctrl selects the first language in your Windows language list, Right Ctrl the second one. Change the order in Settings → Time & language → Language & region.
 
+The menu also has **Start with Windows**, which adds KeySwitcher to your user's startup programs or removes it.
+
 Only a lone, short Ctrl tap (under 0.5 s, no other key or mouse button in between) switches the layout, so Ctrl+C, Ctrl+click, Ctrl+wheel and AltGr keep working. The chosen mode is stored in `HKCU\Software\KeySwitcher\Mode`.
 
 ## Languages
@@ -26,7 +28,7 @@ The menu follows the Windows display language: English, Russian, Ukrainian, Germ
 
 Download `keyswitcher.exe` from [Releases](https://github.com/ladon3434/keyswitcher/releases) and run it.
 
-To start it with Windows, press Win+R, type `shell:startup` and put a shortcut to `keyswitcher.exe` there.
+To start it with Windows, tick **Start with Windows** in the tray menu.
 
 ## Build
 

@@ -1,17 +1,9 @@
-// KeySwitcher - tiny tray utility that switches the keyboard layout with a lone Ctrl tap.
-//   Mode 0: Left Ctrl tap  -> next input language.
-//   Mode 1: Left Ctrl tap  -> Russian, Right Ctrl tap -> English.
-// A tap means: Ctrl pressed and released alone, quickly, with no other key or mouse button in between,
-// so Ctrl+C, Ctrl+click, Ctrl+wheel and AltGr keep working as usual.
-// Built without the C runtime (see build.cmd); the setting is kept in HKCU\Software\KeySwitcher\Mode.
-
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 #include <shellapi.h>
 #include <intrin.h>
 
-// The compiler may emit memset for zero-initialised structs; there is no CRT, so provide it.
 extern "C" {
 #pragma function(memset)
 void* __cdecl memset(void* dst, int value, size_t count)
@@ -24,22 +16,20 @@ void* __cdecl memset(void* dst, int value, size_t count)
 namespace {
 
 constexpr UINT WM_TRAY = WM_APP + 1;
-constexpr UINT WM_SWITCH = WM_APP + 2;   // wParam = VK_LCONTROL or VK_RCONTROL
+constexpr UINT WM_SWITCH = WM_APP + 2;
 constexpr UINT ID_MODE_CYCLE = 1;
 constexpr UINT ID_MODE_FIXED = 2;
 constexpr UINT ID_EXIT = 3;
-constexpr DWORD TAP_MAX_MS = 500;        // a longer hold is not a tap
+constexpr DWORD TAP_MAX_MS = 500;
 constexpr wchar_t REG_KEY[] = L"Software\\KeySwitcher";
 
 HWND g_wnd;
 HICON g_icon;
 UINT g_taskbarCreated;
-DWORD g_mode;                            // 0 = cycle on LCtrl, 1 = LCtrl RU / RCtrl EN
-DWORD g_pending;                         // Ctrl key armed for a tap, 0 if none
+DWORD g_mode;
+DWORD g_pending;
 DWORD g_pendingTime;
 bool g_lDown, g_rDown;
-
-// ---- settings ------------------------------------------------------------------------------------
 
 void LoadMode()
 {
@@ -56,8 +46,6 @@ void SaveMode()
         RegCloseKey(key);
     }
 }
-
-// ---- layout switching ----------------------------------------------------------------------------
 
 HWND TargetWindow(DWORD* threadId)
 {
@@ -107,8 +95,6 @@ void SwitchToLanguage(WORD primaryLang)
         }
 }
 
-// ---- input hooks: detect a lone Ctrl tap ---------------------------------------------------------
-
 bool ModifierHeld()
 {
     return (GetAsyncKeyState(VK_SHIFT) | GetAsyncKeyState(VK_MENU) |
@@ -125,7 +111,7 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wp, LPARAM lp)
             if (vk == VK_LCONTROL || vk == VK_RCONTROL) {
                 bool& held = vk == VK_LCONTROL ? g_lDown : g_rDown;
                 if (down) {
-                    if (!held) {                      // first press, not auto-repeat
+                    if (!held) {
                         held = true;
                         const bool both = g_lDown && g_rDown;
                         g_pending = (both || ModifierHeld()) ? 0 : vk;
@@ -138,7 +124,7 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wp, LPARAM lp)
                     g_pending = 0;
                 }
             } else if (down) {
-                g_pending = 0;                        // Ctrl was part of a shortcut
+                g_pending = 0;
             }
         }
     }
@@ -148,11 +134,9 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK MouseProc(int code, WPARAM wp, LPARAM lp)
 {
     if (code == HC_ACTION && wp != WM_MOUSEMOVE)
-        g_pending = 0;                                // Ctrl+click, Ctrl+wheel
+        g_pending = 0;
     return CallNextHookEx(nullptr, code, wp, lp);
 }
-
-// ---- tray icon -----------------------------------------------------------------------------------
 
 HICON MakeIcon()
 {
@@ -183,7 +167,7 @@ HICON MakeIcon()
     DrawTextW(dc, L"Ая", -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
     GdiFlush();
 
-    for (int i = 0; i < s * s; ++i)                   // painted pixels opaque, corners transparent
+    for (int i = 0; i < s * s; ++i)
         if (bits[i]) bits[i] |= 0xFF000000;
 
     SelectObject(dc, oldFont);
@@ -261,7 +245,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         PostQuitMessage(0);
         return 0;
     }
-    if (msg == g_taskbarCreated && msg) {             // Explorer restarted
+    if (msg == g_taskbarCreated && msg) {
         TrayIcon(NIM_ADD);
         return 0;
     }
@@ -307,7 +291,7 @@ int Run()
     return 0;
 }
 
-} // namespace
+}
 
 extern "C" void __stdcall Entry()
 {

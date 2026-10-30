@@ -1,30 +1,41 @@
 # KeySwitcher
 
-Крошечная утилита для Windows 11: переключает раскладку клавиатуры коротким нажатием Ctrl. Живёт в трее, весит около 9 КБ, написана на чистом WinAPI без C runtime.
+[![Build](https://github.com/ladon3434/keyswitcher/actions/workflows/build.yml/badge.svg)](https://github.com/ladon3434/keyswitcher/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Режимы
+[Русский](README.ru.md)
 
-Меню по клику на иконку «Ая» в трее:
+A tiny Windows 11 tray utility that switches the keyboard layout with a single tap of Ctrl. About 9 KB, plain WinAPI, no C runtime, no dependencies.
 
-- **Левый Ctrl — переключить язык**: левый Ctrl по кругу перебирает установленные языки ввода.
-- **Левый Ctrl — русский, правый Ctrl — английский**: каждый Ctrl включает свой язык.
+## Modes
 
-Срабатывает только одиночное короткое нажатие Ctrl (до 0,5 с), без других клавиш и кнопок мыши. Ctrl+C, Ctrl+клик, Ctrl+колесо и AltGr работают как обычно. Выбранный режим хранится в `HKCU\Software\KeySwitcher\Mode`.
+Click the «Ая» tray icon to choose a mode:
 
-## Сборка
+- **Left Ctrl — next language**: Left Ctrl cycles through the installed input languages.
+- **Left Ctrl — Russian, Right Ctrl — English**: each Ctrl selects its own language.
 
-Нужна Visual Studio с компонентом «Разработка классических приложений на C++».
+Only a lone, short Ctrl tap (under 0.5 s, no other key or mouse button in between) switches the layout, so Ctrl+C, Ctrl+click, Ctrl+wheel and AltGr keep working. The chosen mode is stored in `HKCU\Software\KeySwitcher\Mode`.
+
+## Install
+
+Download `keyswitcher.exe` from [Releases](https://github.com/ladon3434/keyswitcher/releases) and run it.
+
+To start it with Windows, press Win+R, type `shell:startup` and put a shortcut to `keyswitcher.exe` there.
+
+## Build
+
+Requires Visual Studio 2022 or newer with the **Desktop development with C++** workload.
 
 ```
 build.cmd
 ```
 
-Получится `keyswitcher.exe` рядом с исходником.
+The result is `build\keyswitcher.exe`.
 
-## Автозапуск
+## Limitations
 
-Нажмите Win+R, введите `shell:startup` и положите в открывшуюся папку ярлык на `keyswitcher.exe`.
+Windows does not deliver keystrokes from elevated (administrator) windows to a non-elevated program. To switch layouts in such windows too, run KeySwitcher elevated, for example via Task Scheduler with «Run with highest privileges».
 
-## Ограничения
+## License
 
-Окна, запущенные от администратора, не видят нажатий из обычной программы: так устроена защита Windows. Чтобы утилита работала и в них, запускайте её тоже от имени администратора, например через Планировщик заданий с параметром «Выполнить с наивысшими правами».
+[MIT](LICENSE)

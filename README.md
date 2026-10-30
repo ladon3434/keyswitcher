@@ -3,7 +3,7 @@
 [![Build](https://github.com/ladon3434/keyswitcher/actions/workflows/build.yml/badge.svg)](https://github.com/ladon3434/keyswitcher/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Русский](README.ru.md)
+**English** · [Русский](docs/i18n/README.ru.md) · [Українська](docs/i18n/README.uk.md) · [Deutsch](docs/i18n/README.de.md) · [Français](docs/i18n/README.fr.md) · [Español](docs/i18n/README.es.md) · [Italiano](docs/i18n/README.it.md) · [Português](docs/i18n/README.pt.md) · [Polski](docs/i18n/README.pl.md) · [Türkçe](docs/i18n/README.tr.md) · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md) · [简体中文](docs/i18n/README.zh-CN.md) · [繁體中文](docs/i18n/README.zh-TW.md)
 
 ![Tray icon](docs/icon-preview.png)
 

@@ -1,8 +1,8 @@
 # KeySwitcher
 
-[English](README.md)
+[English](../../README.md) · **Русский** · [Українська](README.uk.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Italiano](README.it.md) · [Português](README.pt.md) · [Polski](README.pl.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
 
-![Иконка в трее](docs/icon-preview.png)
+![Иконка в трее](../icon-preview.png)
 
 Крошечная утилита для Windows 11: переключает раскладку клавиатуры коротким нажатием Ctrl. Живёт в трее, весит около 17 КБ, написана на чистом WinAPI без C runtime и зависимостей.
 
@@ -43,4 +43,4 @@ build.cmd
 
 ## Лицензия
 
-[MIT](LICENSE)
+[MIT](../../LICENSE)

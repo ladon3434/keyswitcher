@@ -31,6 +31,47 @@ DWORD g_pending;
 DWORD g_pendingTime;
 bool g_lDown, g_rDown;
 
+struct Strings {
+    WORD lang;
+    const wchar_t* cycle;
+    const wchar_t* fixed;
+    const wchar_t* exit;
+};
+
+const Strings STRINGS[] = {
+    {LANG_ENGLISH, L"Left Ctrl — next language", L"Left Ctrl — primary language, Right Ctrl — secondary", L"Exit"},
+    {LANG_RUSSIAN, L"Левый Ctrl — следующий язык", L"Левый Ctrl — основной язык, правый Ctrl — дополнительный", L"Выход"},
+    {LANG_UKRAINIAN, L"Лівий Ctrl — наступна мова", L"Лівий Ctrl — основна мова, правий Ctrl — додаткова", L"Вихід"},
+    {LANG_GERMAN, L"Linke Strg-Taste — nächste Sprache", L"Linke Strg-Taste — Hauptsprache, rechte Strg-Taste — Zweitsprache", L"Beenden"},
+    {LANG_FRENCH, L"Ctrl gauche — langue suivante", L"Ctrl gauche — langue principale, Ctrl droit — langue secondaire", L"Quitter"},
+    {LANG_SPANISH, L"Ctrl izquierdo — siguiente idioma", L"Ctrl izquierdo — idioma principal, Ctrl derecho — idioma secundario", L"Salir"},
+    {LANG_ITALIAN, L"Ctrl sinistro — lingua successiva", L"Ctrl sinistro — lingua principale, Ctrl destro — lingua secondaria", L"Esci"},
+    {LANG_PORTUGUESE, L"Ctrl esquerdo — próximo idioma", L"Ctrl esquerdo — idioma principal, Ctrl direito — idioma secundário", L"Sair"},
+    {LANG_POLISH, L"Lewy Ctrl — następny język", L"Lewy Ctrl — język główny, prawy Ctrl — język dodatkowy", L"Zakończ"},
+    {LANG_TURKISH, L"Sol Ctrl — sonraki dil", L"Sol Ctrl — ana dil, sağ Ctrl — ikinci dil", L"Çıkış"},
+    {LANG_JAPANESE, L"左 Ctrl — 次の言語", L"左 Ctrl — メイン言語、右 Ctrl — サブ言語", L"終了"},
+    {LANG_KOREAN, L"왼쪽 Ctrl — 다음 언어", L"왼쪽 Ctrl — 기본 언어, 오른쪽 Ctrl — 보조 언어", L"종료"},
+    {LANG_CHINESE_SIMPLIFIED, L"左 Ctrl — 下一种语言", L"左 Ctrl — 主要语言，右 Ctrl — 次要语言", L"退出"},
+};
+
+const Strings TRADITIONAL_CHINESE = {LANG_CHINESE_TRADITIONAL, L"左 Ctrl — 下一種語言", L"左 Ctrl — 主要語言，右 Ctrl — 次要語言", L"結束"};
+
+const Strings& UiStrings()
+{
+    const LANGID ui = GetUserDefaultUILanguage();
+    const WORD primary = PRIMARYLANGID(ui);
+    if (primary == LANG_CHINESE) {
+        const WORD sub = SUBLANGID(ui);
+        if (sub == SUBLANG_CHINESE_TRADITIONAL || sub == SUBLANG_CHINESE_HONGKONG || sub == SUBLANG_CHINESE_MACAU)
+            return TRADITIONAL_CHINESE;
+        return STRINGS[ARRAYSIZE(STRINGS) - 1];
+    }
+    for (const Strings& s : STRINGS)
+        if (s.lang == primary)
+            return s;
+    return STRINGS[0];
+}
+
 void LoadMode()
 {
     DWORD value = 0, size = sizeof(value);
@@ -80,19 +121,42 @@ void SwitchNext()
     RequestLayout(target, list[next]);
 }
 
-void SwitchToLanguage(WORD primaryLang)
+WORD PreloadLanguage(const wchar_t* slot)
+{
+    wchar_t buf[16];
+    DWORD size = sizeof(buf);
+    if (RegGetValueW(HKEY_CURRENT_USER, L"Keyboard Layout\\Preload", slot, RRF_RT_REG_SZ, nullptr, buf, &size) != ERROR_SUCCESS)
+        return 0;
+    DWORD value = 0;
+    for (const wchar_t* p = buf; *p; ++p) {
+        const wchar_t c = *p;
+        DWORD digit;
+        if (c >= L'0' && c <= L'9') digit = c - L'0';
+        else if (c >= L'a' && c <= L'f') digit = c - L'a' + 10;
+        else if (c >= L'A' && c <= L'F') digit = c - L'A' + 10;
+        else return 0;
+        value = (value << 4) | digit;
+    }
+    return LOWORD(value);
+}
+
+void SwitchToSlot(int slot)
 {
     DWORD tid;
     HWND target = TargetWindow(&tid);
     if (!target)
         return;
     HKL list[32];
-    int n = GetKeyboardLayoutList(32, list);
-    for (int i = 0; i < n; ++i)
-        if (PRIMARYLANGID(LOWORD(reinterpret_cast<UINT_PTR>(list[i]))) == primaryLang) {
+    const int n = GetKeyboardLayoutList(32, list);
+    if (n <= slot)
+        return;
+    const WORD lang = PreloadLanguage(slot == 0 ? L"1" : L"2");
+    for (int i = 0; lang && i < n; ++i)
+        if (LOWORD(reinterpret_cast<UINT_PTR>(list[i])) == lang) {
             RequestLayout(target, list[i]);
             return;
         }
+    RequestLayout(target, list[slot]);
 }
 
 bool ModifierHeld()
@@ -158,13 +222,13 @@ HICON MakeIcon()
     HGDIOBJ oldPen = SelectObject(dc, GetStockObject(NULL_PEN));
     RoundRect(dc, 0, 0, s + 1, s + 1, s / 3, s / 3);
 
-    HFONT font = CreateFontW(-(s * 3 / 4), 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0,
+    HFONT font = CreateFontW(-(s * 7 / 8), 0, 0, 0, FW_SEMIBOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0,
                              ANTIALIASED_QUALITY, 0, L"Segoe UI");
     HGDIOBJ oldFont = SelectObject(dc, font);
     SetBkMode(dc, TRANSPARENT);
     SetTextColor(dc, RGB(255, 255, 255));
     RECT rc{0, 0, s, s};
-    DrawTextW(dc, L"Ая", -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+    DrawTextW(dc, L"Ա", -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
     GdiFlush();
 
     for (int i = 0; i < s * s; ++i)
@@ -205,12 +269,13 @@ void TrayIcon(DWORD action)
 
 void ShowMenu()
 {
+    const Strings& text = UiStrings();
     HMENU menu = CreatePopupMenu();
-    AppendMenuW(menu, MF_STRING, ID_MODE_CYCLE, L"Левый Ctrl — переключить язык");
-    AppendMenuW(menu, MF_STRING, ID_MODE_FIXED, L"Левый Ctrl — русский, правый Ctrl — английский");
+    AppendMenuW(menu, MF_STRING, ID_MODE_CYCLE, text.cycle);
+    AppendMenuW(menu, MF_STRING, ID_MODE_FIXED, text.fixed);
     CheckMenuRadioItem(menu, ID_MODE_CYCLE, ID_MODE_FIXED, g_mode == 0 ? ID_MODE_CYCLE : ID_MODE_FIXED, MF_BYCOMMAND);
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuW(menu, MF_STRING, ID_EXIT, L"Выход");
+    AppendMenuW(menu, MF_STRING, ID_EXIT, text.exit);
 
     POINT pt;
     GetCursorPos(&pt);
@@ -232,9 +297,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     switch (msg) {
     case WM_SWITCH:
         if (wp == VK_LCONTROL)
-            g_mode == 0 ? SwitchNext() : SwitchToLanguage(LANG_RUSSIAN);
+            g_mode == 0 ? SwitchNext() : SwitchToSlot(0);
         else if (wp == VK_RCONTROL && g_mode == 1)
-            SwitchToLanguage(LANG_ENGLISH);
+            SwitchToSlot(1);
         return 0;
     case WM_TRAY:
         if (LOWORD(lp) == WM_RBUTTONUP || LOWORD(lp) == WM_LBUTTONUP)

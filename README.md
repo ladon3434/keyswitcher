@@ -5,16 +5,22 @@
 
 [Русский](README.ru.md)
 
-A tiny Windows 11 tray utility that switches the keyboard layout with a single tap of Ctrl. About 9 KB, plain WinAPI, no C runtime, no dependencies.
+![Tray icon](docs/icon-preview.png)
+
+A tiny Windows 11 tray utility that switches the keyboard layout with a single tap of Ctrl. About 12 KB, plain WinAPI, no C runtime, no dependencies.
 
 ## Modes
 
-Click the «Ая» tray icon to choose a mode:
+Click the tray icon (the Armenian letter Ա) to choose a mode:
 
 - **Left Ctrl — next language**: Left Ctrl cycles through the installed input languages.
-- **Left Ctrl — Russian, Right Ctrl — English**: each Ctrl selects its own language.
+- **Left Ctrl — primary language, Right Ctrl — secondary**: Left Ctrl selects the first language in your Windows language list, Right Ctrl the second one. Change the order in Settings → Time & language → Language & region.
 
 Only a lone, short Ctrl tap (under 0.5 s, no other key or mouse button in between) switches the layout, so Ctrl+C, Ctrl+click, Ctrl+wheel and AltGr keep working. The chosen mode is stored in `HKCU\Software\KeySwitcher\Mode`.
+
+## Languages
+
+The menu follows the Windows display language: English, Russian, Ukrainian, German, French, Spanish, Italian, Portuguese, Polish, Turkish, Japanese, Korean, Chinese (Simplified and Traditional). Other languages fall back to English.
 
 ## Install
 

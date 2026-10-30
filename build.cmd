@@ -11,8 +11,9 @@ call "%VS%\VC\Auxiliary\Build\vcvars64.bat" >nul 2>nul || exit /b 1
 
 :build
 if not exist build mkdir build
+rc /nologo /fo build\keyswitcher.res src\keyswitcher.rc || exit /b 1
 cl /nologo /O1 /Os /GS- /GR- /EHs-c- /Zl /utf-8 /W4 /WX /DUNICODE /D_UNICODE ^
-   /Fobuild\ src\keyswitcher.cpp ^
+   /Fobuild\ src\keyswitcher.cpp build\keyswitcher.res ^
    /link /NODEFAULTLIB /ENTRY:Entry /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /MANIFEST:EMBED ^
-   kernel32.lib user32.lib shell32.lib gdi32.lib advapi32.lib /OUT:build\keyswitcher.exe
+   kernel32.lib user32.lib shell32.lib advapi32.lib /OUT:build\keyswitcher.exe
 exit /b %ERRORLEVEL%

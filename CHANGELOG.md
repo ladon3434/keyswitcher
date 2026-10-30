@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-10-30
+
+### Added
+
+- The Ա icon and version information are embedded in the executable, so it shows its icon, name, version and copyright in Explorer and Task Manager.
+
+### Changed
+
+- The tray icon is loaded from the executable instead of being drawn at startup.
+
 ## [1.1.0] - 2026-10-30
 
 ### Added
@@ -19,5 +29,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - Lone-tap detection that leaves Ctrl shortcuts, Ctrl+mouse and AltGr intact.
 - Single instance; the tray icon comes back after Explorer restarts.
 
+[1.1.1]: https://github.com/ladon3434/keyswitcher/releases/tag/v1.1.1
 [1.1.0]: https://github.com/ladon3434/keyswitcher/releases/tag/v1.1.0
 [1.0.0]: https://github.com/ladon3434/keyswitcher/releases/tag/v1.0.0
